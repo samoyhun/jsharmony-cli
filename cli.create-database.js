@@ -17,8 +17,6 @@ You should have received a copy of the GNU Lesser General Public License
 along with this package.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-var wclib = require('./lib/WebConnect.js');
-var xlib = wclib.xlib;
 var path = require('path');
 var fs = require('fs');
 var _ = require('lodash');
@@ -37,18 +35,6 @@ exports.Run = function(params, options, onSuccess){
 
   async.waterfall([
 
-    function(run_cb){
-      if(options.source != 'cli') return run_cb();
-      //Check if supervisor is installed
-      xlib.spawn(global._SUPERVISOR_CMD,[],function(code){},_.once(function(data){
-        global._FOUND_SUPERVISOR = true;
-        return run_cb();
-      }),undefined,function(err){
-        global._FOUND_SUPERVISOR = false;
-        return run_cb();
-      }, {shell: true});
-    },
-    
     function(run_cb){
       if(options.source == 'cli'){
         fs.exists(jshconfig.path, function(exists){
@@ -80,7 +66,6 @@ exports.Run = function(params, options, onSuccess){
       else cmdParams.push('--no-client-portal');
     }
     if(params.SAMPLE_DATA) cmdParams.push('--with-sample-data');
-    if(global._FOUND_SUPERVISOR) cmdParams.push('--with-supervisor');
     if(options.useDefaultSQLitePath) cmdParams.push('--use-default-sqlite-path');
     if(options.preCreate){ cmdParams.push('--pre-create'); cmdParams.push(options.preCreate); }
     if(options.preInit){ cmdParams.push('--pre-init'); cmdParams.push(options.preInit); }

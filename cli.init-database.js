@@ -17,8 +17,6 @@ You should have received a copy of the GNU Lesser General Public License
 along with this package.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-var wclib = require('./lib/WebConnect.js');
-var xlib = wclib.xlib;
 var path = require('path');
 var fs = require('fs');
 var _ = require('lodash');
@@ -36,15 +34,6 @@ exports.Run = function(params, options, onSuccess){
   console.log('\r\nRunning jsHarmony Factory DB Initialization Scripts');
 
   async.waterfall([
-    
-    function(run_cb){
-      if(options.source != 'cli') return run_cb();
-      //Check if supervisor is installed
-      global._FOUND_SUPERVISOR = false;
-      xlib.spawn(global._SUPERVISOR_CMD,[],function(code){ run_cb(); },_.once(function(data){
-        global._FOUND_SUPERVISOR = true;
-      }),undefined,undefined, {shell: true});
-    },
 
     function(run_cb){
       if(options.source == 'cli'){
@@ -76,7 +65,6 @@ exports.Run = function(params, options, onSuccess){
       else cmdParams.push('--no-client-portal');
     }
     if(params.SAMPLE_DATA) cmdParams.push('--with-sample-data');
-    if(global._FOUND_SUPERVISOR) cmdParams.push('--with-supervisor');
     if(options.useDefaultSQLitePath) cmdParams.push('--use-default-sqlite-path');
     if(options.preInit){ cmdParams.push('--pre-init'); cmdParams.push(options.preInit); }
     if(options.postInit){ cmdParams.push('--post-init'); cmdParams.push(options.postInit); }

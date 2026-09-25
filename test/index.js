@@ -30,3 +30,26 @@ describe('Output to STDOUT',function(){
     });
   });
 });
+
+describe('Dev command',function(){
+  it('Display help', function (done) {
+    exec('node index.js',function(error,stdout,stderr){
+      assert(!error,'Error');
+      assert(stdout.indexOf('dev [SCRIPT]') >= 0,'Dev command listed in usage text');
+      done();
+    });
+  });
+  it('Report missing app script', function (done) {
+    exec('node index.js dev ./does-not-exist.js',function(error,stdout,stderr){
+      assert(!error,'Error');
+      assert(stdout.indexOf('App script not found') >= 0,'Missing script reported');
+      done();
+    });
+  });
+  it('Reject missing option value', function (done) {
+    exec('node index.js dev --exclude',function(error,stdout,stderr){
+      assert((stdout+stderr).indexOf('Missing value: --exclude') >= 0,'Missing value reported');
+      done();
+    });
+  });
+});

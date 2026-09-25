@@ -1,6 +1,6 @@
 {
   "name": "jsharmony-cli",
-  "version": "1.13.2",
+  "version": "1.14.0",
   "description": "jsHarmony command-line interface",
   "main": "index.js",
   "scripts": {

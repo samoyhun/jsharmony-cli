@@ -78,6 +78,17 @@ watch [path1] [path2]  - Watch paths for changes
     --exec [CMD]             (optional) Shell command to execute on change
     --exec-for [REGEX] [CMD] (optional) Shell command to execute on change for path regex
     --notify-port [PORT]     (optional) HTTP Endpoint that notifies clients of changes
+
+dev [SCRIPT]           - Run the jsHarmony app, and auto-restart when files change
+    [SCRIPT]                 (optional) App script to run (default: ./app.js)
+    --watch [PATHS]          (optional) Comma-separated paths to watch, replaces defaults
+                               (default: ./models,./app.js,./app.config.js,./app.config.local.js)
+                               or the project paths in jsharmony.project.json
+    --exclude [PATHS]        (optional) Comma-separated paths to exclude, replaces defaults
+                               (default: data,public,test,clientjs)
+    --ext [EXTENSIONS]       (optional) Comma-separated file extensions to watch, or * for all
+                               (default: node,js,json,css,sql,styl)
+    Short aliases: -w (--watch), -i (--exclude), -e (--ext).  Options can be repeated.
 ```
 
 ## Examples
@@ -109,3 +120,11 @@ watch [path1] [path2]  - Watch paths for changes
 **7. Generate model files for the "C" database table**
 
   ```generate -t C```
+
+**8. Run the jsHarmony app, and auto-restart when models or config files change**
+
+  ```jsharmony dev```
+
+**9. Watch the whole project and the "views" folder, excluding "data" and "public"**
+
+  ```jsharmony dev --watch .,./views --exclude data,public --ext js,json,sql,ejs```

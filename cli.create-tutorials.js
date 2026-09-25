@@ -117,14 +117,6 @@ exports.Run = function(params, options, onSuccess){
       resolve();
     }); })
 
-    //Create nstart
-    .then(function(){ return new Promise(function(resolve, reject){
-      var rslt = 'node "./app.js"';
-      fs.writeFileSync(path.join(jshconfig.path,global._NSTART_CMD), rslt);
-      if(!global._IS_WINDOWS) fs.chmodSync(path.join(jshconfig.path,global._NSTART_CMD), '755');
-      resolve();
-    }); })
-
     //Create gitignore
     .then(function(){ return new Promise(function(resolve, reject){
       var ignorePaths = ['/app.config.*.js','/node_modules','/cert','/data'];
@@ -242,7 +234,7 @@ exports.Run = function(params, options, onSuccess){
       console.log('jsHarmony Tutorials have been initialized!');
       console.log('');
       console.log('Start the tutorials by running:');
-      console.log('  '+(global._IS_WINDOWS?'':'./')+global._NSTART_CMD);
+      console.log('  jsharmony dev    (auto-restarts when files change)');
       console.log('    or');
       console.log('  node '+(global._IS_WINDOWS?'app.js':'./app.js'));
       resolve();

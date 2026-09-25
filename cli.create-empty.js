@@ -196,14 +196,6 @@ exports.Run = function(params, options, onSuccess){
       resolve();
     }); })
 
-    //Create nstart
-    .then(function(){ return new Promise(function(resolve, reject){
-      var rslt = 'supervisor -i test,public,data -w "./models,./app.js,./app.config.js,./app.config.local.js" -e "node,js,json,css,sql,styl" node "./app.js"';
-      fs.writeFileSync(path.join(jshconfig.path,global._NSTART_CMD), rslt);
-      if(!global._IS_WINDOWS) fs.chmodSync(path.join(jshconfig.path,global._NSTART_CMD), '755');
-      resolve();
-    }); })
-
     //Create gitignore
     .then(function(){ return new Promise(function(resolve, reject){
       var ignorePaths = ['/app.config.*.js','/node_modules','/cert','/data'];
@@ -244,35 +236,6 @@ exports.Run = function(params, options, onSuccess){
           if(parseInt(global._NPM_VER[0])>=3) return resolve();
           console.log('ERROR: Please upgrade your NPM version to 3 or higher');
         }
-      },undefined,function(err){ console.log('ERROR: Could not find or start '+global._NPM_CMD+'. Check to make sure Node.js and NPM is installed.'); }, {shell: true});
-    }); })
-
-    //Check if supervisor is installed
-    .then(function(){ return new Promise(function(resolve, reject){
-      global._FOUND_SUPERVISOR = false;
-      xlib.spawn(global._SUPERVISOR_CMD,[],function(code){ resolve(); },function(data){
-        global._FOUND_SUPERVISOR = true;
-      },undefined,undefined, {shell: true});
-    }); })
-
-    //Ask user to install supervisor
-    .then(xlib.getStringAsync(function(){
-      if(global._FOUND_SUPERVISOR) return false;
-      console.log('\r\nInstall "supervisor" package to auto-restart the jsHarmony server when models / programs are updated?');
-      console.log('1) Yes');
-      console.log('2) No');
-    },function(rslt,retry){
-      if(rslt=="1"){ global._INSTALL_SUPERVISOR = true; return true; }
-      else if(rslt=="2"){ return false; }
-      else{ console.log('Invalid entry.  Please enter the number of your selection'); retry(); }  }))
-
-    //Install supervisor globally
-    .then(function(){ return new Promise(function(resolve, reject){
-      if(!global._INSTALL_SUPERVISOR) return resolve();
-      console.log('\r\nInstalling Node.js supervisor to auto-restart jsHarmony project');
-      xlib.spawn(global._NPM_CMD,['install','-g','supervisor'],function(code){ resolve(); },function(data){
-        global._FOUND_SUPERVISOR = true;
-        console.log(data);
       },undefined,function(err){ console.log('ERROR: Could not find or start '+global._NPM_CMD+'. Check to make sure Node.js and NPM is installed.'); }, {shell: true});
     }); })
 
@@ -359,10 +322,8 @@ exports.Run = function(params, options, onSuccess){
       console.log('** Be sure to configure ports and HTTPS for security');
       console.log('');
       console.log('Start the server by running:');
-      if(global._FOUND_SUPERVISOR){
-        console.log('  '+(global._IS_WINDOWS?'':'./')+global._NSTART_CMD);
-        console.log('    or');
-      }
+      console.log('  jsharmony dev    (auto-restarts when files change)');
+      console.log('    or');
       console.log('  node '+(global._IS_WINDOWS?'app.js':'./app.js'));
       console.log('');
     })

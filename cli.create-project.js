@@ -481,39 +481,6 @@ exports.Run = function(params, options, onSuccess){
       },undefined,function(err){ console.log('ERROR: Could not find or start '+global._NPM_CMD+'. Check to make sure Node.js and NPM are installed.'); }, {shell: true});
     }); })
 
-    //Check if supervisor is installed
-    .then(function(){ return new Promise(function(resolve, reject){
-      if(!manifest.installer.generate_nstart) return resolve();
-      global._FOUND_SUPERVISOR = false;
-      xlib.spawn(global._SUPERVISOR_CMD,[],function(code){ resolve(); },function(data){
-        global._FOUND_SUPERVISOR = true;
-      },undefined,undefined, {shell: true});
-    }); })
-
-    //Ask user to install supervisor
-    .then(xlib.getStringAsync(function(){
-      global._INSTALL_SUPERVISOR = false;
-      if(!manifest.installer.generate_nstart) return false;
-      if(global._FOUND_SUPERVISOR) return false;
-      console.log('\r\nInstall "supervisor" package to auto-restart the jsHarmony server when models / programs are updated?');
-      console.log('1) Yes');
-      console.log('2) No');
-    },function(rslt,retry){
-      if(rslt=="1"){ global._INSTALL_SUPERVISOR = true; return true; }
-      else if(rslt=="2"){ return true; }
-      else{ console.log('Invalid entry.  Please enter the number of your selection'); retry(); }
-    }))
-
-    //Install supervisor globally
-    .then(function(){ return new Promise(function(resolve, reject){
-      if(!global._INSTALL_SUPERVISOR) return resolve();
-      console.log('\r\nInstalling Node.js supervisor to auto-restart the jsHarmony server when models are updated');
-      xlib.spawn(global._NPM_CMD,['install','-g','supervisor'],function(code){ resolve(); },function(data){
-        global._FOUND_SUPERVISOR = true;
-        console.log(data);
-      },undefined,function(err){ console.log('ERROR: Could not find or start '+global._NPM_CMD+'. Check to make sure Node.js and NPM are installed.'); }, {shell: true});
-    }); })
-
     //Run npm install
     .then(function(){ return new Promise(function(resolve, reject){
       if(jshconfig.no_npm_install) return resolve();
@@ -695,20 +662,6 @@ exports.Run = function(params, options, onSuccess){
           if(dbparentdir && (dbparentdir != '.')) xlib.createFolderRecursiveSync(dbparentdir);
         }
       }
-      resolve();
-    }); })
-
-    //Create nstart
-    .then(function(){ return new Promise(function(resolve, reject){
-      if(!manifest.installer.generate_nstart) return resolve();
-      var watch = '';
-      if(_.isArray(manifest.installer.generate_nstart)) watch = manifest.installer.generate_nstart.join(',');
-      else if(_.isString(manifest.installer.generate_nstart)) watch = manifest.installer.generate_nstart;
-      else watch = ['./models','./views','./app.config.js','./app.config.local.js','./app.js'].join(',');
-
-      var rslt = 'supervisor -i test,public,data -w "'+watch+'" -e "node,js,json,css,sql,styl" node "./app.js"';
-      fs.writeFileSync(path.join(jshconfig.path,global._NSTART_CMD), rslt);
-      if(!global._IS_WINDOWS) fs.chmodSync(path.join(jshconfig.path,global._NSTART_CMD), '755');
       resolve();
     }); })
 

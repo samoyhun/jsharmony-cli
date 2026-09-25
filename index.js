@@ -55,14 +55,11 @@ var jshcli_TestMasterScreenshots = require('./cli.test-master-screenshots.js');
 var jshcli_TestScreenshots = require('./cli.test-screenshots.js');
 
 var jshcli_Watch = require('./cli.watch.js');
+var jshcli_Dev = require('./cli.dev.js');
 
 global._IS_WINDOWS = /^win/.test(process.platform);
 global._NPM_CMD = global._IS_WINDOWS ? 'npm.cmd' : 'npm';
-global._NSTART_CMD = global._IS_WINDOWS ? 'nstart.cmd' : 'nstart.sh';
-global._SUPERVISOR_CMD = global._IS_WINDOWS ? 'supervisor.cmd' : 'supervisor';
 global._EOL = require('os').EOL;
-global._FOUND_SUPERVISOR = false;
-global._INSTALL_SUPERVISOR = false;
 global._NPM_VER = '';
 global._NODE_VER = '';
 global._DEFAULT_SQLITE_PATH = 'data/db/project.db';
@@ -126,6 +123,17 @@ watch [path1] [path2]  - Watch paths for changes\r\n\
     --exec [CMD]             (optional) Shell command to execute on change\r\n\
     --exec-for [REGEX] [CMD] (optional) Shell command to execute on change for path regex\r\n\
     --notify-port [PORT]     (optional) HTTP Endpoint that notifies clients of changes\r\n\
+\r\n\
+dev [SCRIPT]           - Run the jsHarmony app, and auto-restart when files change\r\n\
+    [SCRIPT]                 (optional) App script to run (default: ./app.js)\r\n\
+    --watch [PATHS]          (optional) Comma-separated paths to watch, replaces defaults\r\n\
+                               (default: ./models,./app.js,./app.config.js,./app.config.local.js)\r\n\
+                               or the project paths in jsharmony.project.json\r\n\
+    --exclude [PATHS]        (optional) Comma-separated paths to exclude, replaces defaults\r\n\
+                               (default: data,public,test,clientjs)\r\n\
+    --ext [EXTENSIONS]       (optional) Comma-separated file extensions to watch, or * for all\r\n\
+                               (default: node,js,json,css,sql,styl)\r\n\
+    Short aliases: -w (--watch), -i (--exclude), -e (--ext).  Options can be repeated.\r\n\
 ";
 global.commands = {
   'create factory': jshcli_CreateFactory.Run,
@@ -143,6 +151,7 @@ global.commands = {
   'test master screenshots': jshcli_TestMasterScreenshots.Run,
   'test screenshots': jshcli_TestScreenshots.Run,
   'watch': jshcli_Watch.Run,
+  'dev': jshcli_Dev.Run,
 };
 global.start_time = new Date();
 
@@ -246,6 +255,17 @@ function ValidateParameters(onComplete){
       else if(arg == '--exec'){ if(args.length === 0){ return sys_error('Missing CMD: --exec [CMD]'); } params.EXEC.push({ cmd: args.shift() }); continue; }
       else if(arg == '--exec-for'){ if(args.length < 2){ return sys_error('Missing PORT: --exec-for [REX] [CMD]'); } params.EXEC.push({ for: args.shift(), cmd: args.shift() }); continue; }
       else { if(!params.PATHS) params.PATHS = [];  params.PATHS.push(arg); continue; }
+    }
+    else if(cmd=='dev'){
+      var devListParams = { '--watch': 'WATCH', '-w': 'WATCH', '--exclude': 'EXCLUDE', '-i': 'EXCLUDE', '--ext': 'EXT', '-e': 'EXT' };
+      if(arg in devListParams){
+        var devParam = devListParams[arg];
+        if(args.length === 0){ return sys_error('Missing value: '+arg+' ['+devParam+']'); }
+        if(!params[devParam]) params[devParam] = [];
+        params[devParam] = params[devParam].concat(args.shift().split(',').map(function(val){ return val.trim(); }).filter(function(val){ return !!val; }));
+        continue;
+      }
+      else if(!params.SCRIPT && (arg[0] != '-')){ params.SCRIPT = arg; continue; }
     }
 
     return sys_error('Invalid argument: '+arg);
